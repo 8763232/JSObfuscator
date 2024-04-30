@@ -1,10 +1,43 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 )
+
+func WalkPath(input string) []string {
+	var files []string
+	filepath.Walk(input, func(path string, info os.FileInfo, err error) error {
+		if path == input {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	return files
+}
+
+func Encryption(o *Obfuscator, input, output string) {
+	_input, err := os.ReadFile(input)
+	if err != nil {
+		log.Printf(`Encryption:%s`, err.Error())
+		return
+	}
+	_output := o.Encryption(string(_input))
+	if _output == "" {
+		log.Printf(`Encryption: _output is nil`)
+		return
+	}
+
+	if err := os.WriteFile(output, []byte(_output), 0644); err != nil {
+		log.Printf(`Encryption: WriteFile :%s`, err.Error())
+	}
+}
 
 func main() {
 
@@ -15,22 +48,22 @@ func main() {
 		panic(err)
 	}
 
-	JavaScript := `
-        (function(){
-            var variable1 = '5' - 3;
-            var variable2 = '5' + 3;
-            var variable3 = '5' + - '2';
-            var variable4 = ['10','10','10','10','10'].map(parseInt);
-            var variable5 = 'foo ' + 1 + 1;
-            console.log(variable1);
-            console.log(variable2);
-            console.log(variable3);
-            console.log(variable4);
-            console.log(variable5);
-        })();
-    `
 	params := config.String(`Params.obfuscate`, "{}")
+
 	engine := NewEngine().SetParams(params)
-	result := engine.Encryption(JavaScript)
-	log.Printf(`restult:%s`, result)
+
+	output := config.String(`Env.output`, "./output")
+	input := config.String(`Env.input`, "./input")
+	files := WalkPath(input)
+
+	for _, f := range files {
+		if IsDir(f) {
+			continue
+		}
+
+		_output := strings.ReplaceAll(f, input, output)
+		CreateDir(_output)
+		Encryption(engine, f, _output)
+		fmt.Printf(f)
+	}
 }

@@ -25,6 +25,17 @@ func Exists(path string) bool {
 	return true
 }
 
+func IsDir(path string) bool {
+	stat, err := os.Stat(path) //os.Stat获取文件信息
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return stat.IsDir()
+}
+
 // 调用os.MkdirAll递归创建文件夹
 func CreateDir(dir string) error {
 	dir = filepath.Dir(dir)
