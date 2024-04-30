@@ -52,18 +52,17 @@ func main() {
 
 	engine := NewEngine().SetParams(params)
 
-	output := config.String(`Env.output`, "./output")
-	input := config.String(`Env.input`, "./input")
+	output := config.String(`Env.output`, "output")
+	input := config.String(`Env.input`, "input")
 	files := WalkPath(input)
 
 	for _, f := range files {
 		if IsDir(f) {
 			continue
 		}
-
 		_output := strings.ReplaceAll(f, input, output)
 		CreateDir(_output)
 		Encryption(engine, f, _output)
-		fmt.Printf(f)
+		fmt.Printf("input:%s output:%s \n", f, _output)
 	}
 }
