@@ -60,6 +60,9 @@ func main() {
 		if IsDir(f) {
 			continue
 		}
+		if strings.Contains(f, "DS_Store") {
+			continue
+		}
 		_output := strings.ReplaceAll(f, input, output)
 		CreateDir(_output)
 		Encryption(engine, f, _output)

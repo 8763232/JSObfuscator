@@ -1,15 +1,15 @@
 package main
 
 import (
+	js "github.com/dop251/goja"
 	"log"
 	"os"
-	"strings"
+	"strconv"
 )
-import v8 "rogchap.com/v8go"
 
 type Obfuscator struct {
 	params     string
-	runtime    *v8.Context
+	runtime    *js.Runtime
 	obfuscator []byte
 }
 
@@ -29,8 +29,8 @@ func NewEngine() *Obfuscator {
 	obfuscator := string(_obfuscator) + ";" + template
 
 	// 初始化引擎
-	vm := v8.NewContext()
-	if _, err := vm.RunScript(obfuscator, "obfuscator.js"); err != nil {
+	vm := js.New()
+	if _, err := vm.RunScript("obfuscator.js", obfuscator); err != nil {
 		panic(err)
 	}
 
@@ -48,11 +48,11 @@ func (o *Obfuscator) SetParams(params string) *Obfuscator {
 }
 
 func (o *Obfuscator) Encryption(JavaScript string) string {
-	JavaScript = strings.ReplaceAll(JavaScript, "\n", "\\\n")
-	JavaScript = strings.ReplaceAll(JavaScript, "'", "\"")
-	source := `Encryption('` + JavaScript + `',` + o.params + `)`
+	//JavaScript = strings.ReplaceAll(JavaScript, "\n", "\\\n")
+	//JavaScript = strings.ReplaceAll(JavaScript, "'", "\"")
+	source := `Encryption(` + strconv.Quote(JavaScript) + `,` + o.params + `)`
 
-	res, err := o.runtime.RunScript(source, "Encryption.js")
+	res, err := o.runtime.RunScript("Encryption.js", source)
 	if err != nil {
 		log.Printf(`Encryption error:%s`, err.Error())
 		return ""
